@@ -1,0 +1,86 @@
+# Summary
+basically, an automated world editor for defining and migrating player "bases".
+
+# Features (Phase 1)
+	* save structure:
+		* saves a player-defined structure based on bounding boxes created by:
+			|A) a redwool and a bluewool 4-block corner.
+			|B) a redwool and a bluewool 4-block corner.
+		* bounding_corner is made of 4 blocks arranged in a 3x3x3 open-air:
+			* a corner block(a rare block)
+			* and, 1 colored WoolBlock along each axis in the direction the bounding_box should extend.
+			* the color of wool is assoc with a player, or
+		* the bounding_corners must be on opposite corners, and the inner space must point towards the other bounding_corner.
+		* borders of the bounding_box are inclusive, so the most narrow dimension is 3 blocks thick.
+		* bounding_corners of different players cannot overlap
+		* default max border dimension: 64.
+		* only height 64Y to 128Y is copied to the new world. (for now)
+		* bounding_corners only work in OVERWORLD. (for now)
+		* check for a playerbed within the bounding box, and which player is saved to that bed (aka player sleeppoint).
+			* maybe detect player bed spawn point within the bounding box, and use that to assign player
+		* save everything in the bounding_box as a schematic file. just in case.
+		LATER: may want to make the corner block (the intersection) a commmand block that stores the player who set it.
+			NOTE: could use a sponge (or other non-obtaianable block to denote a corner)
+
+	* place structure:
+		* places a save structure in a new world at a new location on the surface, and orientated in the same direction as the origional.
+		* randomize x,z based on a origin point (like a world spawn point) and a min-distance, and a max-distance
+		* restore the palyer sleeppoint if one was saved with the structure.  check for valid spawn conditions. shift as needed
+			* or set all player spawn to the world spawn, and they have to find their place. muh ha ha ha.
+
+	* placement rules:
+		* bounded_space will be placed randomly within 256 of the worldspawn. #LATER:configurable
+		* bounded_space will be placed randomly at least 48 from worldspawn. #LATER:configurable
+		* bounded_space will not overlap another player's bounded_space.
+		* bounded_space will be placed at the destiation's surface without modifing local terrain.
+
+# Future Plans
+	allow 3D bounding_cube (instead of just a column)
+		this will require a range to search within.  (3d-center and radius)
+			EX: worldspawn+128 (128 along each axis. NOTE: height is limited to 1y and worldmaxheight.
+			EX: worldspawn+512x+32y+256z (
+				if spawnpoint was at 0,64,0 it would search with-in a 3d-rectange bouded by: +512x,96,+256z  to  -512x,32y,-256z.
+
+
+## Future Features
+	* build rail system:
+		need rail pattern (a cross-section of 1 lenght of rail.  minimum 1 rail on 1 cobblestone (the default)
+			NOTE: matrix's cross section would need: 2 rails, 2 ironfence, 15 stone, and 1 redstone.  i don't know what to do about the repeaters that occure every ?7? blocks, or the lamp every ?8?.  that is a more complicated algorythm. maybe ...
+			NOTE: on the lighting of the rails... could place a torch every 8 blocks (on the side, or center) or replace a redstone with a repeater every mod8-1, and a redstonelamp every mod8 blocks.
+		rail paths may not pass thru player structures.
+		3 blocks above each rail pattern placement are destroied.
+		locate the placed structures, map out fewest-least-turn paths between structures.
+		place junctions where needed along path. (these may have patterns in the future, but for now they are just what we have)
+		allow assignment of "grand central"  (aka a spawn village)
+			default: just find the structure nearest the spawn point and make it the center.
+		save rail system paths
+
+	* repair rail system:
+		load the saved rail paths and rail patter, then rebuild the rail system based on those. (good to run 1/week just after a backup)
+
+	* scan world file:
+		Q: is there a way to trigger an observer when a block is placed or destroied?
+			A:insted, use fs-snapshot to lock the world file, and the run the scan on it.  like doing a backup.
+		scan the given world file (and assoc structure files ,etc...) row-by-row, and create an index of blocktype->[every x,y,z that block type appears at)
+		NOTE: this will take a long time.
+
+	* chest bank sync
+		* easy enough for players to manually move these items.
+
+# Library/Plugin dependencies
+	* Bukkit
+	* WorldEdit
+	* MultiVerse?
+	* Schematic lib?
+
+################################
+# OLD stuff
+	bounding_corner shcematic:
+		layer 63		64	      65   (Y-height, points NE)
+		  ...   .#.  ...
+		  ...   .E#  .#.
+		  ...   ...  ...
+		where:
+			.  is empty air
+			#  is a woolblock of the color assigned to player
+			E  is an EmeraldBlock

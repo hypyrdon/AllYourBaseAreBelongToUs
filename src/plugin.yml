@@ -1,0 +1,16 @@
+name: AllYourBaseAreBelongToUs
+version: 0.1
+main: loc.hypyrdon.bukkitplugins.AllYourBaseAreBelongToUs
+author: hypyrdon
+description: Player Base Migrator
+
+commands:
+    urbase:
+        usage: /<command>
+        alias: (urb,aybabtu)
+        description: manage your base definition
+
+permissions:
+    urbase.use:
+        description: core urbase manager permission
+        default: op
