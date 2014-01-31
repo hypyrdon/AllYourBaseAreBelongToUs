@@ -39,7 +39,7 @@ permissions:
     urbase.cmd.aybabtu:
         description: perm to allow migrateall
         default: op
-    urbase.cmd.aybabtu.clear:
+    urbase.cmd.aybabtuvoid:
         description: perm to delete all bases from cache
         default: op
 #    urbase.woolcolor:
