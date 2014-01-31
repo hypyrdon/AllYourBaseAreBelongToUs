@@ -1,16 +1,53 @@
 name: AllYourBaseAreBelongToUs
 version: 0.1
-main: loc.hypyrdon.bukkitplugins.AllYourBaseAreBelongToUs
+main: com.hypyrdon.bukkitplugins.AllYourBaseAreBelongToUsPlugin
 author: hypyrdon
 description: Player Base Migrator
 
 commands:
     urbase:
         usage: /<command>
-        alias: (urb,aybabtu)
-        description: manage your base definition
+        alias: (urb)
+        description: access base definition commands
+        permission:  urbase.use
+        permission-message: not allowed
+    urbmark:
+        usage: /<command> p1 p2
+        alias: (urbm)
+        permission:  urbase.cmd.mark
+        description: marks an area to be migrated (in the source world)
+    aybabtu:
+        usage: /<command>
+        permission:  urbase.cmd.aybabtu
+        description: migrates all marked areas. oldname=migrateall
+    urbcleanup:
+        usage: /<command>
+        alias: (aybabtuvoid)
+        permission:  urbase.cmd.aybabtuvoid
+        description: deletes/clears all marked areas (in source world)
 
 permissions:
     urbase.use:
         description: core urbase manager permission
         default: op
+    urbase.cmd.mark:
+        description: perm to allow a player to mark an area as a PlayerBase
+        default: op
+#    urbase.info.mark:
+#        description: perm to allow a player to display assigned marks [world:x,y,z]
+#        default: op
+    urbase.cmd.aybabtu:
+        description: perm to allow migrateall
+        default: op
+    urbase.cmd.aybabtu.clear:
+        description: perm to delete all bases from cache
+        default: op
+#    urbase.woolcolor:
+#        description: the color of wool to use when making a base marker
+#        default: NONE
+#    urbase.allowed.srcworlds.later:
+#        description: list of worlds in which a player is allowed to mark a base to be moved.
+#        default: NONE
+#    urbase.allowed.dstworlds.later:
+#        description: list of worlds in which a player is allowed to place a base.
+#        default: NONE

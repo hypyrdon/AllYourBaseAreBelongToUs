@@ -4,16 +4,17 @@ basically, an automated world editor for defining and migrating player "bases".
 Each player is assigned a color.  This is the color of wool the player must use when defining the boundary of the player's "base".
 In phase 1, only ops (or possibly offline) will be able to place a base.
 
-## placement logic:
-	* bounded_space will be placed randomly within 256 of the worldspawn. #LATER:configurable
-	* bounded_space will be placed randomly at least 48 from worldspawn. #LATER:configurable
-	* bounded_space will not overlap another player's bounded_space.
-	* bounded_space will be placed at the destiation's surface without modifing local terrain.
+## marker logic:
+## automated placement logic:
+	* player's base will be placed randomly within 256 of the worldspawn. #LATER:configurable
+	* player's base will be placed randomly at least 48 from worldspawn. #LATER:configurable
+	* player's base will not overlap another player's bounded_space.
+	* player's base will be placed at the destiation's surface without modifing local terrain.
 
 ## Library/Plugin dependencies
 	* Bukkit
 	* WorldEdit
-	* MultiVerse?
+	* MultiVerse? YES.
 	* Schematic lib?
 
 # Features (Phase 1)
@@ -22,38 +23,40 @@ In phase 1, only ops (or possibly offline) will be able to place a base.
 		* urbase.woolcolor
 		* urbase.allowed.srcworlds
 		* urbase.allowed.dstworlds
+		* urbase.cmd.aybabtu
+		* urbase.cmd.place
 	* commands
 		* mark p1|p2
 			* marks corners of a base boundary (where the player is standing)
 		* place <playername> <world> <p1> <p2>
-			* ops_only
+			* ops_only?
 			* checks cache for a PlayerBase owned by <playername> and places it by patching p1 and orients it towards p2
 		* place <playername> <world>
-			* ops_only
+			* ops_only?
 			* checks cache for a PlayerBase owned by <playername> and places it according to random params.
 		* migrateall <srcworld> <dstworld>
-			* ops_only
-			* tries to find and move all PlayerBases defined by PlayerBaseBoundaryMarkers from <srcworld> to <destworld>
+			* console_only
+			* tries to find (scan) and move all PlayerBases defined by PlayerBaseBoundaryMarkers from <srcworld> to <destworld>
 			* <srcworld> and <dstworld> are optional if their assoc defaults are set in configuration.
 	* configuration
 		* automatic migration
 			* cornerblocks ideas
 				* 1 cornerblock (Default=SpongeBlock, RC wants FencePost) <BLOCKID>
 				* 2 cornerblocks (Default=WoodFence,NetherFence.  p1 and p2) <BLOCKID> <BLOCKID>
-			* maximum searching distance from world spawn INT
-			* minimum placement distance from world spawn INT
-			* maximum placement distance from world spawn INT
-			* minimum placement distance other PlayerBases INT
 			* default source world STRING (world to scan for PlayerBaseBoundaryMarkers)
+				* maximum searching distance from world spawn in source world INT
 			* default destination world STRING (world to place PlayerBase in)
-			* base cache schematics directory STRING (where to cache the PlayerBases to)
+				* minimum placement distance from world spawn in destination world INT
+				* maximum placement distance from world spawn in destination world INT
+				* minimum placement distance other PlayerBases in destination world INT
+			* basedir for schematics cache STRING (where to cache the PlayerBases to)
 			* delete cached schematics on placement BOOL
 	* automated migration
 		1) player must define 2 corners using PlayerBaseBoundaryMarkers (of assigned color) or the /mark command
 		* PlayerBaseBoundaryMarker is made of 4 blocks arranged in a 3x3x3 open-air:
-			* a corner block(a rare block)
+			* a corner block (usually a rare block)
 			* and, 1 colored WoolBlock along each axis in the direction the bounding_box should extend.
-			* the color of wool is assoc with a player, or
+			* the color of wool is assoc with a player, see configuration
 		* the PlayerBaseBoundaryMarkers must be on opposite corners, and the inner space must point towards the other PlayerBaseBoundaryMarker.
 		* borders of the bounding_box are inclusive, so the most narrow dimension is 3 blocks thick.
 		* PlayerBaseBoundarys of different players cannot overlap
