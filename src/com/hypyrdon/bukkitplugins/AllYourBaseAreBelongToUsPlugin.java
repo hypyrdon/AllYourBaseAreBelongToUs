@@ -131,29 +131,32 @@ public class AllYourBaseAreBelongToUsPlugin extends JavaPlugin {
 							src_p1 = player.getLocation();
 							src_p2 = null;
 						}
-						return true;
+						break;
 					case 1:
 						//if 1 arg: then set p1 or p2 (as passed)
-						if (args[0] == "p1") {
+						if (args[0].equalsIgnoreCase("p1") ) {
 							src_p1 = player.getLocation();
-						} else if (args[0] == "p2") {
+						} else if (args[0].equalsIgnoreCase("p2") ) {
 							src_p2 = player.getLocation();
 						} else {
-							player.sendMessage(CHATPREERR + "invalid usage of command.");
+							player.sendMessage(CHATPREERR + "invalid usage of " + cmd.getName() + " command.");
 							return false;
 						}
-						return true;
+						break;
 					case 2:
 						//TODO: if 2 args: p1(x,y,z) and p2(x,y,z), then check_and_set_p1 and check_and_set_p2
 						//TODO: decide how a point/location is to be stored in the yaml. (a string <"00x00y00z"> or 3 Ints<[ 00 00 00]>, or ???)
+						player.sendMessage(CHATPREWARN + cmd.getName() + " does not support setting both points simultaneously, yet.");
 						return false;
 					default:
-						player.sendMessage(CHATPREERR + "too many arguments for command.");
+						player.sendMessage(CHATPREERR + "too many arguments for " + cmd.getName() + " command.");
 						break;
 				}
 				//TODO: is p2 within 64 of p1 in each dimension?
 				cachedMarks.set("urbase." + player.getName() +".mark.src." + player.getWorld() + ".p1", src_p1);
 				cachedMarks.set("urbase." + player.getName() +".mark.src." + player.getWorld() + ".p2", src_p2);
+				saveCachedMarks();
+				return true;
 
 			// is player in destination world
 			} else if (player.hasPermission("urbase.allowed.dstworlds." + player.getWorld() )) {
@@ -168,27 +171,30 @@ public class AllYourBaseAreBelongToUsPlugin extends JavaPlugin {
 							dst_p1 = player.getLocation();
 							dst_p2 = null;
 						}
-						return true;
+						break;
 					case 1:
-						if (args[0] == "p1") {
+						if (args[0].equalsIgnoreCase("p1") ) {
 							dst_p1 = player.getLocation();
-						} else if (args[0] == "p2") {
+						} else if (args[0].equalsIgnoreCase("p2") ) {
 							dst_p2 = player.getLocation();
 						} else {
-							player.sendMessage(CHATPREERR + "invalid usage of command.");
+							player.sendMessage(CHATPREERR + "invalid usage of " + cmd.getName() + " command.");
 							return false;
 						}
-						return true;
+						break;
 					case 2:
 						//TODO: if 2 args: p1(x,y,z) and p2(x,y,z), then check_and_set_p1 and check_and_set_p2
+						player.sendMessage(CHATPREWARN + cmd.getName() + " does not support setting both points simultaneously, yet.");
 						return false;
 					default:
-						player.sendMessage(CHATPREERR + "too many arguments for command.");
+						player.sendMessage(CHATPREERR + "too many arguments for " + cmd.getName() + " command.");
 						break;
 				}
 				//TODO: is p2 within 64 of p1 in each dimension?
 				cachedMarks.set("urbase." + player.getName() +".mark.dst." + player.getWorld() + ".p1", dst_p1);
 				cachedMarks.set("urbase." + player.getName() +".mark.dst." + player.getWorld() + ".p2", dst_p2);
+				saveCachedMarks();
+				return true;
 
 			} else {
 				player.sendMessage(CHATPREERR + "you do NOT have access to use markers in world[" + player.getWorld() + "]");
@@ -198,12 +204,14 @@ public class AllYourBaseAreBelongToUsPlugin extends JavaPlugin {
 	}
 
 	private boolean cmdMigrateAll(CommandSender sender, Command cmd, String[] args) {
-		Bukkit.getServer().getLogger().warning("Not Implemented, yet.");
+		sender.sendMessage("[" + cmd.getName() + "] is not implemented, yet.");
+		Bukkit.getServer().getLogger().warning("[" + cmd.getName() + "] Not Implemented.");
 		return false;
 	}
 
 	private boolean cmdClearCache(CommandSender sender, Command cmd, String[] args) {
-		Bukkit.getServer().getLogger().warning("Not Implemented, yet.");
+		sender.sendMessage("[" + cmd.getName() + "] is not implemented, yet.");
+		Bukkit.getServer().getLogger().warning("[" + cmd.getName() + "] Not Implemented.");
 		return false;
 	}
 
