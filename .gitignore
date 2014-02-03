@@ -1,0 +1,9 @@
+*.swp
+.idea
+*.log
+tmp
+out
+output
+vendor
+.pyvritenv
+.rbenv-version
