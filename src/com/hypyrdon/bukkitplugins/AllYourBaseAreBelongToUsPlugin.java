@@ -22,6 +22,7 @@ import java.util.List;
  *
  * may have to add MultiverseCore jar (and other Mv jars)
  * may have to use MultiverseException for Exceptions
+ * more
  */
 
 public class AllYourBaseAreBelongToUsPlugin extends JavaPlugin {
