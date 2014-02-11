@@ -31,9 +31,9 @@ public class AllYourBaseAreBelongToUsPlugin extends JavaPlugin {
 	private final String CHATPREMSG = ChatColor.BLUE + "[AllUrBase]" + ChatColor.WHITE + " ";
 	private final String CHATPREWARN = ChatColor.YELLOW + "[AllUrBase] * WARNING * ";
 	private final String CHATPREERR = ChatColor.RED + "[AllUrBase] * ERROR * ";
-	private File marksFile = null;
+	private File markerFile = null;
 	private FileConfiguration cachedMarks;
-	final String marksFilename = "marks.yml";
+	final String markerFilename = "markers.yml";
 
 	@Override
 	public void onEnable() {
@@ -122,13 +122,13 @@ public class AllYourBaseAreBelongToUsPlugin extends JavaPlugin {
 
 	private boolean processCmdMark(Player player, Command cmd, String[] args) {
 		//TODO: check player is in a valid src or dst world
-		// get any pre-existing locs for player from marks.yml datafile
-		Location src_p1 = ymlLocBukkitLoc( player.getWorld(), cachedMarks.getDoubleList("urbase." + player.getName() + ".mark.src." + player.getWorld().getName() + ".p1"));
-		Location src_p2 = ymlLocBukkitLoc( player.getWorld(), cachedMarks.getDoubleList("urbase." + player.getName() + ".mark.src." + player.getWorld().getName() + ".p2"));
-		Location dst_p1 = ymlLocBukkitLoc( player.getWorld(), cachedMarks.getDoubleList("urbase." + player.getName() + ".mark.dst." + player.getWorld().getName() + ".p1"));
-		Location dst_p2 = ymlLocBukkitLoc( player.getWorld(), cachedMarks.getDoubleList("urbase." + player.getName() + ".mark.dst." + player.getWorld().getName() + ".p2"));
+		// get any pre-existing locs for player from markers.yml datafile
+		Location src_p1 = ymlLocBukkitLoc( player.getWorld(), cachedMarks.getDoubleList("urbase." + player.getName() + ".marker.src." + player.getWorld().getName() + ".p1"));
+		Location src_p2 = ymlLocBukkitLoc( player.getWorld(), cachedMarks.getDoubleList("urbase." + player.getName() + ".marker.src." + player.getWorld().getName() + ".p2"));
+		Location dst_p1 = ymlLocBukkitLoc( player.getWorld(), cachedMarks.getDoubleList("urbase." + player.getName() + ".marker.dst." + player.getWorld().getName() + ".p1"));
+		Location dst_p2 = ymlLocBukkitLoc( player.getWorld(), cachedMarks.getDoubleList("urbase." + player.getName() + ".marker.dst." + player.getWorld().getName() + ".p2"));
 
-		if (player.hasPermission("urbase.cmd.mark." + player.getWorld().getName() )) {
+		if (player.hasPermission("urbase.cmd.marker." + player.getWorld().getName() )) {
 
 			//is player in valid source world?
 			if (player.hasPermission("urbase.allowed.srcworlds." + player.getWorld().getName() )) {
@@ -165,8 +165,8 @@ public class AllYourBaseAreBelongToUsPlugin extends JavaPlugin {
 						break;
 				}
 				//TODO: is p2 within 64 of p1 in each dimension?
-				cachedMarks.set("urbase." + player.getName() +".mark.src." + player.getWorld().getName() + ".p1", src_p1);
-				cachedMarks.set("urbase." + player.getName() +".mark.src." + player.getWorld().getName() + ".p2", src_p2);
+				cachedMarks.set("urbase." + player.getName() +".marker.src." + player.getWorld().getName() + ".p1", src_p1);
+				cachedMarks.set("urbase." + player.getName() +".marker.src." + player.getWorld().getName() + ".p2", src_p2);
 				this.saveCachedMarks();
 				return true;
 
@@ -203,8 +203,8 @@ public class AllYourBaseAreBelongToUsPlugin extends JavaPlugin {
 						break;
 				}
 				//TODO: is p2 within 64 of p1 in each dimension?
-				cachedMarks.set("urbase." + player.getName() +".mark.dst." + player.getWorld().getName() + ".p1", dst_p1);
-				cachedMarks.set("urbase." + player.getName() +".mark.dst." + player.getWorld().getName() + ".p2", dst_p2);
+				cachedMarks.set("urbase." + player.getName() +".marker.dst." + player.getWorld().getName() + ".p1", dst_p1);
+				cachedMarks.set("urbase." + player.getName() +".marker.dst." + player.getWorld().getName() + ".p2", dst_p2);
 				this.saveCachedMarks();
 				return true;
 
@@ -212,7 +212,7 @@ public class AllYourBaseAreBelongToUsPlugin extends JavaPlugin {
 				getLogger().warning("Player [" + player.getName() + "] attempted to use AYBABTU module, but does not have rights to use in world [" + player.getWorld().getName() + "].");
 				player.sendMessage(CHATPREERR + "you do NOT have access to use markers in world[" + player.getWorld().getName() + "]");
 			}
-		} //has permission:mark
+		} //has permission:marker
 		return false;
 	}
 
@@ -229,28 +229,28 @@ public class AllYourBaseAreBelongToUsPlugin extends JavaPlugin {
 	}
 
 	private void loadCachedMarks(){
-		if (marksFile == null) {
-			marksFile = new File(getDataFolder() + marksFilename);
+		if (markerFile == null) {
+			markerFile = new File(getDataFolder() + markerFilename);
 		}
-		cachedMarks = YamlConfiguration.loadConfiguration(marksFile);
+		cachedMarks = YamlConfiguration.loadConfiguration(markerFile);
 	}
 
 	private FileConfiguration getCachedMarks() {
 		if ( cachedMarks == null ) {
 			loadCachedMarks();
 		}
-		getLogger().info("finest:AllYourBaseAreBelongToUs loaded (" + cachedMarks.getKeys(true).size() + ") items from marks file");
+		getLogger().info("finest:AllYourBaseAreBelongToUs loaded (" + cachedMarks.getKeys(true).size() + ") items from marker file");
 		return cachedMarks;
 	}
 
 	private void saveCachedMarks() {
-		if (cachedMarks == null || marksFile == null) {
+		if (cachedMarks == null || markerFile == null) {
 			return;
 		}
 		try {
-			cachedMarks.save(marksFile);
+			cachedMarks.save(markerFile);
 		} catch ( IOException e) {
-			getLogger().severe("could not save marks cache " + marksFile );
+			getLogger().severe("could not save marker data file " + markerFile );
 		}
 	}
 
