@@ -14,6 +14,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.logging.Level;
 
 /**
  * NAME: AllYourBaseAreBelongToUsPlugin
@@ -36,41 +37,50 @@ public class AllYourBaseAreBelongToUsPlugin extends JavaPlugin {
 
 	@Override
 	public void onEnable() {
-		//PluginManager pm = getServer().getPluginManager();
-		Bukkit.getServer().getLogger().info("AllYourBaseAreBelongToUs plugin enabled");
+		this.getLogger().setLevel(Level.ALL);  // This does not work!!  neither does setting java.util.logging.config.file!
+		this.getLogger().finest("This is a finest");
+		this.getLogger().finer("This is a finer");
+		this.getLogger().fine("This is a fine");
+		this.getLogger().info("This is an info");
+		this.getLogger().warning("This is a warning");
+		this.getLogger().severe("This is a severe");
+		getLogger().info("AllYourBaseAreBelongToUs plugin enabled");
 		cachedMarks = getCachedMarks();
-		this.saveDefaultConfig(); //just in case it is not there.
+		saveCachedMarks();
+		saveDefaultConfig(); //just in case it is not there.
 	}
 
 	@Override
 	public void onDisable() {
-		Bukkit.getServer().getLogger().info("AllYourBaseAreBelongToUs plugin disabled");
+		getLogger().info("AllYourBaseAreBelongToUs plugin disabled");
+		getLogger().setLevel(Level.INFO);
 	}
 
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String commandLabel, String[] args) {
-
+		getLogger().info("finest:AllYourBaseAreBelongToUs received command" + commandLabel);
 		// command was run from console
 		if ( !(sender instanceof Player)) {
+			getLogger().info("finest:non-player sender detected. assuming server console.");
 			return onCommandFromConsole(sender, cmd, args);
 		}
 
 		Player p = (Player) sender;
-		Bukkit.getServer().getLogger().info("AllYourBaseAreBelongToUs received command" + commandLabel);
 
 		//TODO: use sub-commands.   || args[0].equalsIgnoreCase("MIGRATEALL")
 		if (cmd.getName().equalsIgnoreCase("urbase")) {
 			if (!p.hasPermission("urbase.use")) {
 				sender.sendMessage(CHATPREMSG + "You don't have permission to use the AllYourBaseAreBelongToUs plugin");
-				return false;
+				getLogger().warning("Player [" + p.getName() + "] attempted to use AYBABTU module, but does not have rights to so.");
+				return true;  //returning true will silence the "usage" dump
 			}
 			return true;
 		} else if (cmd.getName().equalsIgnoreCase("urbmark")) {
 			return processCmdMark(p, cmd, args);
-		} else if (cmd.getName().equalsIgnoreCase("aybabtu")) {
+		} else if (cmd.getName().equalsIgnoreCase("aybabtu")) { //aybabtu is only avail via server console
 			sender.sendMessage(CHATPREWARN + "Watch your language!");
 			return false;
-		} else if (cmd.getName().equalsIgnoreCase("urbcleanup")) {
+		} else if (cmd.getName().equalsIgnoreCase("urbcleanup")) { //urbcleanup is only avail via server console
 			sender.sendMessage(CHATPREERR + "You can't do that here.");
 			return false;
 		} else {
@@ -81,13 +91,12 @@ public class AllYourBaseAreBelongToUsPlugin extends JavaPlugin {
 	}
 
 	private boolean onCommandFromConsole(CommandSender sender, Command cmd, String[] args) {
-
 		//console can run migrateall and cleanall, but no others.
 		if (cmd.getName().equalsIgnoreCase("aybabtu")) {
-			Bukkit.getServer().getLogger().severe("Gesundheit...");
-			return cmdMigrateAll(sender,cmd,args);
+			getLogger().severe("Gesundheit..."); //TODO: "aybabtu" Not implemented yet
+			return cmdMigrateAll(sender, cmd, args);
 		} else if (cmd.getName().equalsIgnoreCase("urbcleanup")) {
-			Bukkit.getServer().getLogger().severe("Gesundheit...");
+			getLogger().severe("Gesundheit..."); //TODO: "urbcleanup" Not implemented yet
 			return cmdClearCache(sender,cmd,args);
 		} else {
 			sender.sendMessage(CHATPREERR + "cannot do that in console.");
@@ -97,31 +106,33 @@ public class AllYourBaseAreBelongToUsPlugin extends JavaPlugin {
 
 	private Location ymlLocBukkitLoc(World world, List<Double> coords) throws IllegalArgumentException {
 		//String[] coords = coordslist.toArray();
+		getLogger().info("finest:ymlLocBukkitLoc: entered.");
+		getLogger().info("finest:coords.size() = " + coords.size());
 		if ( coords.size() == 3 ) {
 			//format: x, y, z
 			return new Location( world, coords.get(0), coords.get(1), coords.get(2) );
 		//} else  if ( coords.size() == 5 ) {
 		//	//TODO: format: x, y, z, yaw, pitch
 		} else {
-			throw new IllegalArgumentException("a location must be x,y,z or x,y,z,yaw,pitch.");
+			getLogger().info("finer: a location must be x,y,z or x,y,z,yaw,pitch.");
+			//throw new IllegalArgumentException("a location must be x,y,z or x,y,z,yaw,pitch.");
 		}
-		//return null;
+		return null;
 	}
 
 	private boolean processCmdMark(Player player, Command cmd, String[] args) {
-		//TODO: check perms (src.worlds, dst.worlds, mark)  if (!p.hasPermission("urbase.allowed.srcworlds"))
 		//TODO: check player is in a valid src or dst world
-		// get pre-existing locs for player from marks.yml "config/save/cache/data" file
-		Location src_p1 = ymlLocBukkitLoc( player.getWorld(), cachedMarks.getDoubleList("urbase." + player.getName() + ".mark.src." + player.getWorld() + ".p1"));
-		Location src_p2 = ymlLocBukkitLoc( player.getWorld(), cachedMarks.getDoubleList("urbase." + player.getName() + ".mark.src." + player.getWorld() + ".p2"));
-		Location dst_p1 = ymlLocBukkitLoc( player.getWorld(), cachedMarks.getDoubleList("urbase." + player.getName() + ".mark.dst." + player.getWorld() + ".p1"));
-		Location dst_p2 = ymlLocBukkitLoc( player.getWorld(), cachedMarks.getDoubleList("urbase." + player.getName() + ".mark.dst." + player.getWorld() + ".p2"));
+		// get any pre-existing locs for player from marks.yml datafile
+		Location src_p1 = ymlLocBukkitLoc( player.getWorld(), cachedMarks.getDoubleList("urbase." + player.getName() + ".mark.src." + player.getWorld().getName() + ".p1"));
+		Location src_p2 = ymlLocBukkitLoc( player.getWorld(), cachedMarks.getDoubleList("urbase." + player.getName() + ".mark.src." + player.getWorld().getName() + ".p2"));
+		Location dst_p1 = ymlLocBukkitLoc( player.getWorld(), cachedMarks.getDoubleList("urbase." + player.getName() + ".mark.dst." + player.getWorld().getName() + ".p1"));
+		Location dst_p2 = ymlLocBukkitLoc( player.getWorld(), cachedMarks.getDoubleList("urbase." + player.getName() + ".mark.dst." + player.getWorld().getName() + ".p2"));
 
-		if (player.hasPermission("urbase.cmd.mark." + player.getWorld() )) {
+		if (player.hasPermission("urbase.cmd.mark." + player.getWorld().getName() )) {
 
-			//is player in source world?
-			if (player.hasPermission("urbase.allowed.srcworlds." + player.getWorld() )) {
-				player.sendMessage(CHATPREMSG + "you are in the source world[" + player.getWorld() + "]");
+			//is player in valid source world?
+			if (player.hasPermission("urbase.allowed.srcworlds." + player.getWorld().getName() )) {
+				player.sendMessage(CHATPREMSG + "you are a valid source world[" + player.getWorld().getName() + "]"); //TODO: DEBUG
 				switch (args.length) {
 					case 0:
 						//if 0 args: then check_for_p1_isCached then set p2 to player pos, else reset p2, and set p1 to player pos.
@@ -154,14 +165,14 @@ public class AllYourBaseAreBelongToUsPlugin extends JavaPlugin {
 						break;
 				}
 				//TODO: is p2 within 64 of p1 in each dimension?
-				cachedMarks.set("urbase." + player.getName() +".mark.src." + player.getWorld() + ".p1", src_p1);
-				cachedMarks.set("urbase." + player.getName() +".mark.src." + player.getWorld() + ".p2", src_p2);
-				saveCachedMarks();
+				cachedMarks.set("urbase." + player.getName() +".mark.src." + player.getWorld().getName() + ".p1", src_p1);
+				cachedMarks.set("urbase." + player.getName() +".mark.src." + player.getWorld().getName() + ".p2", src_p2);
+				this.saveCachedMarks();
 				return true;
 
-			// is player in destination world
-			} else if (player.hasPermission("urbase.allowed.dstworlds." + player.getWorld() )) {
-				player.sendMessage(CHATPREMSG + "you are in the destination world[" + player.getWorld() + "]");
+			// is player in a valid destination world
+			} else if (player.hasPermission("urbase.allowed.dstworlds." + player.getWorld().getName() )) {
+				player.sendMessage(CHATPREMSG + "you are a valid destination world[" + player.getWorld().getName() + "]"); //TODO: DEBUG
 				switch (args.length) {
 					case 0:
 						//if 0 args: then check_for_p1_isCached then set p2 to player pos, else reset p2, and set p1 to player pos.
@@ -192,13 +203,14 @@ public class AllYourBaseAreBelongToUsPlugin extends JavaPlugin {
 						break;
 				}
 				//TODO: is p2 within 64 of p1 in each dimension?
-				cachedMarks.set("urbase." + player.getName() +".mark.dst." + player.getWorld() + ".p1", dst_p1);
-				cachedMarks.set("urbase." + player.getName() +".mark.dst." + player.getWorld() + ".p2", dst_p2);
-				saveCachedMarks();
+				cachedMarks.set("urbase." + player.getName() +".mark.dst." + player.getWorld().getName() + ".p1", dst_p1);
+				cachedMarks.set("urbase." + player.getName() +".mark.dst." + player.getWorld().getName() + ".p2", dst_p2);
+				this.saveCachedMarks();
 				return true;
 
 			} else {
-				player.sendMessage(CHATPREERR + "you do NOT have access to use markers in world[" + player.getWorld() + "]");
+				getLogger().warning("Player [" + player.getName() + "] attempted to use AYBABTU module, but does not have rights to use in world [" + player.getWorld().getName() + "].");
+				player.sendMessage(CHATPREERR + "you do NOT have access to use markers in world[" + player.getWorld().getName() + "]");
 			}
 		} //has permission:mark
 		return false;
@@ -206,13 +218,13 @@ public class AllYourBaseAreBelongToUsPlugin extends JavaPlugin {
 
 	private boolean cmdMigrateAll(CommandSender sender, Command cmd, String[] args) {
 		sender.sendMessage("[" + cmd.getName() + "] is not implemented, yet.");
-		Bukkit.getServer().getLogger().warning("[" + cmd.getName() + "] Not Implemented.");
+		getLogger().warning("[" + cmd.getName() + "] Not Implemented."); //TODO: "aybabtu" Not implemented yet
 		return false;
 	}
 
 	private boolean cmdClearCache(CommandSender sender, Command cmd, String[] args) {
 		sender.sendMessage("[" + cmd.getName() + "] is not implemented, yet.");
-		Bukkit.getServer().getLogger().warning("[" + cmd.getName() + "] Not Implemented.");
+		getLogger().warning("[" + cmd.getName() + "] Not Implemented."); //TODO: "urbcleanup" Not implemented yet
 		return false;
 	}
 
@@ -227,6 +239,7 @@ public class AllYourBaseAreBelongToUsPlugin extends JavaPlugin {
 		if ( cachedMarks == null ) {
 			loadCachedMarks();
 		}
+		getLogger().info("finest:AllYourBaseAreBelongToUs loaded (" + cachedMarks.getKeys(true).size() + ") items from marks file");
 		return cachedMarks;
 	}
 
